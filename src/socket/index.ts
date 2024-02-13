@@ -1,6 +1,8 @@
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { startNewRound } from "./crashgame";
+import { addPlayer, startNewRound } from "./crashgame";
 import { Namespace } from "socket.io";
+import { SocketEventNames } from "../data/constants";
+import { IPlayer } from "../types";
 
 interface Message {
   text: string;
@@ -16,7 +18,10 @@ const socketProvider = (
 ) => {
   startNewRound(io);
   io.on("connection", (socket) => {
-    console.log("new user connected");
+    socket.on(SocketEventNames.NewUser, (player: IPlayer) => {
+      console.info("New player: ", player);
+      addPlayer(player);
+    });
   });
 };
 export default socketProvider;

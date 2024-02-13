@@ -1,8 +1,10 @@
+import { SocketEventNames } from "../data/constants";
 import { f, fixed } from "../utils/timeConverter";
 // import GameHistoryModel from "../models/GameHistory";
 // import BetHistoryModel from "../models/BetHistory";
 // import UserModel, { User } from "../models/User";
 import MersenneTwister from "mersenne-twister";
+import { IPlayer } from "../types";
 const randGenerator = new MersenneTwister();
 
 var timeElapsed = 0;
@@ -10,6 +12,8 @@ var isRising = false;
 var crashPoint = 0;
 var crashTimeElapsed = 0;
 var GameID = 0;
+
+var players: IPlayer[] = [];
 
 export const startNewRound = (io: any) => {
   const x = randGenerator.random();
@@ -43,7 +47,7 @@ export const startNewRound = (io: any) => {
 };
 
 export const sendStateInfo = (handler?: any) => {
-  handler.emit("stateInfo", {
+  handler.emit(SocketEventNames.StateInfo, {
     gameState: getTimeState(),
   });
 };
@@ -55,4 +59,8 @@ export const getTimeState = () => {
     GameID,
     crashTimeElapsed,
   };
+};
+
+export const addPlayer = (newPlayer: IPlayer) => {
+  players.push(newPlayer);
 };
