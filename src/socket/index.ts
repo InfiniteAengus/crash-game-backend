@@ -1,5 +1,5 @@
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { addPlayer, startNewRound } from "./crashgame";
+import { addBet, addPlayer, cashOut, startNewRound } from "./crashgame";
 import { Namespace } from "socket.io";
 import { SocketEventNames } from "../data/constants";
 import { IPlayer } from "../types";
@@ -11,8 +11,6 @@ interface Message {
   time: Date;
 }
 
-const messages: Message[] = [];
-
 const socketProvider = (
   io: Namespace<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) => {
@@ -21,6 +19,17 @@ const socketProvider = (
     socket.on(SocketEventNames.NewUser, (player: IPlayer) => {
       console.info("New player: ", player);
       addPlayer(player);
+    });
+    socket.on(SocketEventNames.Bet, (playerId: string, betAmount: number) => {
+      console.log("New bet: ", playerId, betAmount);
+      addBet(playerId, betAmount);
+    });
+    socket.on(SocketEventNames.CashOut, (playerId: string) => {
+      const cashOutAmount = cashOut(playerId);
+      if (cashOutAmount) {
+        io.emit(SocketEventNames.CashOut, playerId, cashOutAmount);
+      }
+      console.log("CashOut: ", playerId, cashOutAmount);
     });
   });
 };

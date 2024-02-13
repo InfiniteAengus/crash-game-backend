@@ -14,6 +14,7 @@ var crashTimeElapsed = 0;
 var GameID = 0;
 
 var players: IPlayer[] = [];
+var bets: { playerId: string; betAmount: number }[] = [];
 
 export const startNewRound = (io: any) => {
   const x = randGenerator.random();
@@ -21,8 +22,10 @@ export const startNewRound = (io: any) => {
   isRising = true;
   timeElapsed = 0;
   GameID++;
+  bets = [];
 
   console.log(`Game ${GameID}: ${crashPoint}`);
+  io.emit(SocketEventNames.NewRound);
 
   let timerId = setInterval(async () => {
     if (isRising && timeElapsed > 5 && f(timeElapsed) >= crashPoint) {
@@ -63,4 +66,25 @@ export const getTimeState = () => {
 
 export const addPlayer = (newPlayer: IPlayer) => {
   players.push(newPlayer);
+};
+
+export const addBet = (playerId: string, betAmount: number) => {
+  bets.push({
+    playerId,
+    betAmount,
+  });
+};
+
+export const cashOut = (playerId: string) => {
+  const bet = bets.filter((val) => val.playerId === playerId);
+  if (!bet.length) {
+    return 0;
+  }
+  if (timeElapsed < 0 || !isRising) {
+    return 0;
+  }
+
+  bets = bets.filter((val) => val.playerId !== playerId);
+
+  return f(timeElapsed) * bet[0].betAmount;
 };
